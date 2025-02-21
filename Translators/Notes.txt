@@ -1,3 +1,5 @@
+Использовал Linux (Kali)
+
 Для использования в прогармме (cpp-runtime)
 sudo apt update
 sudo apt install git cmake g++ uuid-dev pkg-config
@@ -9,9 +11,15 @@ cd build
 cmake ..
 make
 sudo make install
+export CPLUS_INCLUDE_PATH=/usr/local/include/antlr4-runtime:$CPLUS_INCLUDE_PATH
+export LIBRARY_PATH=/usr/local/lib:$LIBRARY_PATH
+export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
 Для генерации лексера и парсера
 curl -O https://www.antlr.org/download/antlr-4.13.1-complete.jar
+export CLASSPATH=".:/home/ghcm/Documents/Translators_8semestr/antlr-4.13.1-complete.jar:$CLASSPATH"
+alias antlr4='java -jar /home/ghcm/Documents/Translators_8semestr/antlr-4.13.1-complete.jar'
+alias grun='java org.antlr.v4.gui.TestRig'
 
 Генерация лексера и парсера
 antlr4 -Dlanguage=Cpp DoWhileLoop.g4 -visitor 
