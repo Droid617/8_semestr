@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GENERATOR_H
+#define GENERATOR_H
 
 struct LCGParams
 {
@@ -23,3 +24,4 @@ bool check_params(LCGParams* params)
 	
 	return begin && end;
 }
+#endif

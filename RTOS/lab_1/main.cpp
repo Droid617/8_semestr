@@ -5,17 +5,14 @@
 #include <pthread.h>
 #include <getopt.h>
 #include <string.h>
+#include <iostream>
 
 #include "generator.h"
 #include "worker.h"
 
-#ifdef _WIN32
-	#include <windows.h>
-#endif
-
 #define MAX_SIZE 1048576
 
-pthread_barrier_t barrier;
+static pthread_barrier_t barrier;
 
 int main(int argc, char** argv) 
 {
@@ -54,9 +51,8 @@ int main(int argc, char** argv)
         }
     }
 	
-	if (!check_params(&lcg_params) || errno == ERANGE)
+	if (errno == ERANGE)
 	{
-		fprintf(stderr, "Your params wrong! a, x, c from [0, m) and m from [2, ULONG_MAX].\n");
 		fprintf(stderr, "Usage: %s -i input_file_path -o output_file_path -a a -c c -x x -m m\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}
@@ -80,6 +76,7 @@ int main(int argc, char** argv)
 
     char* input_text = (char*)malloc(file_size);
     fread(input_text, 1, file_size, input_file);
+	fflush(input_file);
     fclose(input_file);
     
     // One time pad generation
@@ -98,19 +95,17 @@ int main(int argc, char** argv)
     pthread_join(thread, NULL);
 
     // Creating n threads (n = number of kernels)
-	int num_workers;
-	#ifdef _WIN32
-		SYSTEM_INFO systemInfo;
-		GetSystemInfo(&systemInfo);
-		num_workers = systemInfo.dwNumberOfProcessors;
-    #else
-        num_workers = sysconf(_SC_NPROCESSORS_ONLN);
-    #endif
+    int num_workers = sysconf(_SC_NPROCESSORS_ONLN);
     
     pthread_t* threads = (pthread_t*)malloc(num_workers * sizeof(pthread_t));
     WorkerContext* contexts = (WorkerContext*)malloc(num_workers * sizeof(WorkerContext));
     
-    pthread_barrier_init(&barrier, NULL, num_workers + 1);
+    int status = pthread_barrier_init(&barrier, NULL, num_workers + 1);
+    if (status != 0) 
+    {
+        fprintf(stderr, "Error: can't init barrier, status = %d\n", status);
+        exit(EXIT_FAILURE);
+    }
 
     // Quantitty of data for each worker
     size_t segment_length = file_size / num_workers;
@@ -121,13 +116,18 @@ int main(int argc, char** argv)
         contexts[i].pad = pad + i * segment_length;
         contexts[i].output_text = (char*)malloc(segment_length);
         contexts[i].length = segment_length;
-		contexts[i].barrier = barrier;
+		contexts[i].barrier = &barrier;
 
         pthread_create(&threads[i], NULL, worker, (void*)&contexts[i]);
     }
 
     // Main thread wait for workers
-    pthread_barrier_wait(&barrier);
+    status = pthread_barrier_wait(&barrier);
+    if (status != 0) 
+    {
+	fprintf(stderr, "Error wait barrier in thread with status = %d\n", status);
+	exit(EXIT_FAILURE);
+    }
 
     // Joinning processed data
     char* output_text = (char*)malloc(file_size);
@@ -144,6 +144,7 @@ int main(int argc, char** argv)
 		exit(EXIT_FAILURE);
 	}
     fwrite(output_text, 1, file_size, output_file);
+	fflush(output_file);
     fclose(output_file);
 
     free(input_text);

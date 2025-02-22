@@ -1,4 +1,6 @@
-#pragma once
+#ifndef WORKER_H
+#define WORKER_H
+
 #include <cstddef>
 #include <pthread.h>
 #include "generator.h"
@@ -9,7 +11,7 @@ struct WorkerContext
     char* pad;
     char* output_text;
     size_t length;
-	pthread_barrier_t barrier;
+	pthread_barrier_t* barrier;
 };
 
 void* worker(void* arg) 
@@ -21,7 +23,7 @@ void* worker(void* arg)
         context->output_text[i] = context->input_text[i] ^ context->pad[i];
     }
 
-    pthread_barrier_wait(&context->barrier);
+    pthread_barrier_wait(context->barrier);
     return NULL;
 }
 
@@ -43,3 +45,4 @@ void* create_pad(void* arg)
 
     return NULL;
 }
+#endif
