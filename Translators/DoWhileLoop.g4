@@ -14,19 +14,17 @@ program
     {
     	auto conditionCtx = _localctx->condition();
     	
-        while (DoWhileLoopExecutor::checkCondition(conditionCtx)) 
-	{
+	do {
             DoWhileLoopExecutor::executeStatement(_localctx->statement(), conditionCtx);
-        }
+        } while (DoWhileLoopExecutor::checkCondition(conditionCtx));
     }
     | DO ' ' statement WHILE '(' condition ')' ';'
     {
         auto conditionCtx = _localctx->condition();
     	
-        while (DoWhileLoopExecutor::checkCondition(conditionCtx)) 
-	{
+	do {
             DoWhileLoopExecutor::executeStatement(_localctx->statement(), conditionCtx);
-        }
+        } while (DoWhileLoopExecutor::checkCondition(conditionCtx));
     }
     ;
 
@@ -41,16 +39,6 @@ condition
 
 expression
 	: PRINT '(' increment VAR ')' ';'
-	{
-	    std::string varName = $VAR.text;
-	    int value = variables[varName];
-	    if ($increment.ctx->getText() == "++") 
-	    {
-	        value++;
-	        variables[varName] = value;
-	    }
-	    std::cout << value << std::endl;
-	}
 	;
 
 increment

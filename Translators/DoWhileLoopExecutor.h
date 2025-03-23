@@ -34,10 +34,6 @@ public:
             if (expressionCtx->PRINT() != nullptr) 
             {
                 std::string varName = expressionCtx->VAR()->getText();
-                if (variables.find(varName) == variables.end()) 
-                {
-                    throw std::runtime_error("Variable " + varName + " is not defined!");
-                }
                 int value = variables[varName];
 
                 if (expressionCtx->increment() != nullptr && expressionCtx->increment()->getText() == "++") 
@@ -57,6 +53,7 @@ public:
             {
                 executeStatement(programCtx->statement(), conditionCtx);
             }
+            
         }
 
         return true;
@@ -64,4 +61,4 @@ public:
     
 };
 
-#endif
+#endif // DOWHILELOOPEXECUTOR_H

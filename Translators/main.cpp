@@ -14,8 +14,6 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    variables["x"] = 10;
-
     std::ifstream stream;
     stream.open(argv[1]);
 
