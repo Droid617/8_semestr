@@ -25,7 +25,6 @@ typedef struct
     int client_id;
     bbs::BBSParams params;
     uint32_t seed;
-    std::mutex mtx; // for client session access
 } client_session_t;
 
 static resmgr_connect_funcs_t    connect_funcs;
@@ -104,8 +103,6 @@ int io_devctl(resmgr_context_t *ctp, io_devctl_t *msg, iofunc_ocb_t *ocb)
     {
         return ENOMEM;
     }
-
-    std::lock_guard<std::mutex> lock(session->mtx);
 
     if ((sts = iofunc_devctl_default(ctp, msg, ocb)) != _RESMGR_DEFAULT)
     {
